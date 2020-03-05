@@ -1,0 +1,114 @@
+<html>
+  <head>
+    <title>Collision Detection</title>
+  </head>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+
+  <script src="build/three.js"></script>
+  <script src="build/dat.gui.min.js"></script>
+  <script src="build/stats.min.js"></script>
+
+  <script>
+    //Global Variables
+    var scene, camera, renderer;
+    var control, stats;
+
+    //Create a function that creates the sphere
+    function createCube() {
+      var cubeGeometry = new THREE.BoxGeometry(4, 8, 4);
+      var cubeMaterial = new THREE.MeshLambertMaterial({
+        color: 0xff3e80
+      });
+      var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+      cube.name = "cube";
+      cube.position = new THREE.Vector3(2, 2, 0);
+      cube.castShadow = true;
+
+      scene.add(cube);
+      return cube;
+    }
+
+    //initisalise scene
+    function init() {
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+
+      camera.position.x = 10;
+      camera.position.y = 16;
+      camera.position.z = 15;
+
+      camera.lookAt(scene.position);
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setClearColor(0x000000, 0.1);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      //create plane
+      var planeGeometry = new THREE.PlaneGeometry(100, 100, 15, 15);
+      var planeMesh = new THREE.MeshLambertMaterial();
+      var plane = new THREE.Mesh(planeGeometry, planeMesh);
+
+      plane.receiveShadow = true;
+
+      plane.rotation.x = -0.5 * Math.PI;
+      plane.position.x = 0;
+      plane.position.y = 0;
+      plane.position.z = 0;
+
+      scene.add(plane);
+
+      var spotLight = new THREE.SpotLight(0xffffff);
+      spotLight.position.set(20, 40, 20);
+      spotLight.shadow.CameraNear = 20;
+      spotLight.shadow.CameraFar = 150;
+      spotLight.castShadow = true;
+      spotLight.shadowDarnkess = 1;
+
+      scene.add(spotLight);
+
+      var cube = createCube();
+
+      document.body.appendChild(renderer.domElement);
+
+      render();
+    }
+
+    function render() {
+      /*update stats
+      stats.update();
+
+      TWEEN.Update();
+*/
+      //render scene
+      renderer.render(scene, camera);
+
+      requestAnimationFrame(render);
+    }
+
+    function handleResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // calls the init function when the window is done loading.
+    window.onload = init;
+    // calls the handleResize function when the window is resized
+    window.addEventListener("resize", handleResize, false);
+  </script>
+</html>
