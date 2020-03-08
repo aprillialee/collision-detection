@@ -18,26 +18,11 @@
   <script>
     //Global Variables
     var scene, camera, renderer;
-    var cube;
+    var ball;
+    var hit;
     var control, stats;
 
-    //Create a function that creates the sphere
-    function createCube() {
-      var cubeGeometry = new THREE.SphereGeometry(5, 15, 15);
-      var cubeMaterial = new THREE.MeshLambertMaterial({
-        color: 0xff3e80
-      });
-      var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-
-      cube.name = "cube";
-      cube.position.x = 0.1;
-      cube.position.z = 0.1;
-      cube.position.y = 5;
-      cube.castShadow = true;
-
-      scene.add(cube);
-      return cube;
-    }
+    var cubes = [];
 
     //initisalise scene
     function init() {
@@ -51,8 +36,8 @@
       );
 
       camera.position.x = 10;
-      camera.position.y = 16;
-      camera.position.z = 15;
+      camera.position.y = 20;
+      camera.position.z = 20;
 
       camera.lookAt(scene.position);
 
@@ -85,19 +70,54 @@
 
       scene.add(spotLight);
 
-      var cube = createCube();
+      //creating cube
+      var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
+      var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff358f});
+      var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+      cube.name = "cube";
+      cube.position.x = 5;
+      cube.position.y = 2.5;
+
+      cube.castShadow = true;
+
+      scene.add(cube);
+      cubes.push(cube);
+
+      //create ball
+      var ballGeometry = new THREE.BoxGeometry(4, 4, 4);
+      var ballMaterial = new THREE.MeshPhongMaterial();
+      var ball = new THREE.Mesh(ballGeometry, ballMaterial);
+
+      ball.name = "ball";
+
+      ball.position.z = 0;
+      ball.position.y = 2.5;
+      ball.castShadow = true;
+
+      scene.add(ball);
 
       document.addEventListener("keypress", onDocumentKeyPress, false);
 
+      //Adding controls to the ball and making the rotation add the illusion of rolling
       function onDocumentKeyPress(event) {
         var keyCode = event.which;
         //console.log(keyCode);
-        var positionCube = 0.5;
+        var positionBall = 0.5;
+        var rotationBall = 5;
 
         if (keyCode == 97) {
-          cube.position.x -= positionCube;
+          ball.position.x -= positionBall;
+          //ball.rotation.x -= rotationBall;
         } else if (keyCode == 100) {
-          cube.position.x += positionCube;
+          ball.position.x += positionBall;
+          //ball.rotation.x += rotationBall;
+        } else if (keyCode == 119) {
+          ball.position.z -= positionBall;
+          ball.rotation.z -= rotationBall;
+        } else if (keyCode == 115) {
+          ball.position.z += positionBall;
+          ball.rotation.z += rotationBall;
         }
       }
 
@@ -106,15 +126,44 @@
       render();
     }
 
+    function checkCollision() {
+      var ball = scene.getObjectByName("ball");
+      var cube = scene.getObjectByName("cube");
+      var originPoint = ball.position.clone();
+
+      for (
+        var vertexIndex = 0;
+        vertexIndex < ball.geometry.vertices.length;
+        vertexIndex++
+      ) {
+        var localVertex = ball.geometry.vertices[vertexIndex].clone();
+        var globalVertex = localVertex.applyMatrix4(ball.matrix);
+        var directionVector = globalVertex.sub(ball.position);
+
+        var ray = new THREE.Raycaster(
+          originPoint,
+          directionVector.clone().normalize()
+        );
+        var collisionResults = ray.intersectObjects(cubes);
+        if (
+          collisionResults.length > 0 &&
+          collisionResults[0].distance < directionVector.length()
+        ) {
+          console.log("hit");
+          scene.remove(cube);
+        }
+      }
+    }
+
     function render() {
       /*update stats
-          stats.update();
+           stats.update();
 
-          TWEEN.Update();
-    */
+           TWEEN.Update();
+     */
       //render scene
       renderer.render(scene, camera);
-
+      checkCollision();
       requestAnimationFrame(render);
     }
 
