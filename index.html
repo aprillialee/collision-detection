@@ -13,22 +13,26 @@
   <script src="build/three.js"></script>
   <script src="build/dat.gui.min.js"></script>
   <script src="build/stats.min.js"></script>
+  <script src="build/TrackballControls.js"></script>
 
   <script>
     //Global Variables
     var scene, camera, renderer;
+    var cube;
     var control, stats;
 
     //Create a function that creates the sphere
     function createCube() {
-      var cubeGeometry = new THREE.BoxGeometry(4, 8, 4);
+      var cubeGeometry = new THREE.SphereGeometry(5, 15, 15);
       var cubeMaterial = new THREE.MeshLambertMaterial({
         color: 0xff3e80
       });
       var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
       cube.name = "cube";
-      cube.position = new THREE.Vector3(2, 2, 0);
+      cube.position.x = 0.1;
+      cube.position.z = 0.1;
+      cube.position.y = 5;
       cube.castShadow = true;
 
       scene.add(cube);
@@ -83,6 +87,20 @@
 
       var cube = createCube();
 
+      document.addEventListener("keypress", onDocumentKeyPress, false);
+
+      function onDocumentKeyPress(event) {
+        var keyCode = event.which;
+        //console.log(keyCode);
+        var positionCube = 0.5;
+
+        if (keyCode == 97) {
+          cube.position.x -= positionCube;
+        } else if (keyCode == 100) {
+          cube.position.x += positionCube;
+        }
+      }
+
       document.body.appendChild(renderer.domElement);
 
       render();
@@ -90,10 +108,10 @@
 
     function render() {
       /*update stats
-      stats.update();
+          stats.update();
 
-      TWEEN.Update();
-*/
+          TWEEN.Update();
+    */
       //render scene
       renderer.render(scene, camera);
 
